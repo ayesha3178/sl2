@@ -1,40 +1,58 @@
 import numpy as np
 
-# Define bipolar training pairs
-X = np.array([[1, -1, 1],
-              [-1, -1, 1]])
 
-Y = np.array([[1, -1],
-              [-1, 1]])
+class BAM:
 
-# Step 1: Compute weight matrix W using Hebbian learning
-W = np.zeros((X.shape[1], Y.shape[1]))
+    def __init__(self, input_size, output_size):
 
-for i in range(len(X)):
-    W += np.outer(X[i], Y[i])
+        self.weights = np.zeros((input_size, output_size))
 
-print("Weight Matrix W:")
-print(W)
+    def train(self, input_patterns, output_patterns):
 
-# Bipolar sign activation function
-def bipolar_sign(x):
-    return np.where(x >= 0, 1, -1)
+        for x, y in zip(input_patterns, output_patterns):
+            self.weights += np.outer(x, y)
 
-# Step 2: Recall function from X to Y
-def recall_Y(x_input):
-    y_output = bipolar_sign(np.dot(x_input, W))
-    return y_output
+        print("Updated Weight Matrix:\n", self.weights)
 
-# Step 3: Recall function from Y to X
-def recall_X(y_input):
-    x_output = bipolar_sign(np.dot(W, y_input))
-    return x_output
+    def recall(self, input_pattern, direction="forward"):
 
-# Test recall in both directions
-test_x = X[0]
-recalled_y = recall_Y(test_x)
-recalled_x = recall_X(recalled_y)
+        if direction == "forward":
 
-print("\nTest Input X:", test_x)
-print("Recalled Y:", recalled_y)
-print("Recalled back X:", recalled_x)
+            output = np.sign(np.dot(input_pattern, self.weights))
+
+        else:
+
+            output = np.sign(np.dot(input_pattern, self.weights.T))
+
+        return output
+
+    # Define two pairs of bipolar vectors (1 and -1 instead of 0 and 1)
+
+
+input_patterns = np.array([[1, -1, 1], [-1, 1, -1]])
+
+output_patterns = np.array([[1, -1], [-1, 1]])
+
+# Initialize BAM
+
+bam = BAM(input_size=3, output_size=2)
+
+# Train BAM with the given patterns
+
+bam.train(input_patterns, output_patterns)
+
+# Recall from input to output
+
+test_input = np.array([1, -1, 1])
+
+retrieved_output = bam.recall(test_input, direction="forward")
+
+print("\nRecalled Output for input {}: {}".format(test_input, retrieved_output))
+
+# Recall from output to input
+
+test_output = np.array([1, -1])
+
+retrieved_input = bam.recall(test_output, direction="backward")
+
+print("\nRecalled Input for output {}: {}".format(test_output, retrieved_input))
